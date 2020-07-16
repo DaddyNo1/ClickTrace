@@ -1,0 +1,4 @@
+rootProject.name='ClickTrace'
+include ':app'
+include ':buildSrc'
+include ':test'
