@@ -22,10 +22,9 @@ class JavassistInjector {
     public static final String ON_CLICK_LISTENER = "android.view.View\$OnClickListener"
     public static final String ON_CLICK = "onClick"
     public static final String METHOD_SIGNATURE = "(Landroid/view/View;)V"
-    public static final String TAG = "==ClickTrace==";
-    public static final String JAR_FILE = ".jar";
-    public static final String OPT_FILE = ".opt";
-    public static final String ANDROIDX = "androidx";
+    public static final String TAG = "==ClickTrace=="
+    public static final String JAR_FILE = ".jar"
+    public static final String OPT_FILE = ".opt"
 
 
     Project project
@@ -100,20 +99,24 @@ class JavassistInjector {
      * @param file file
      */
     def handleClassFile(String classPath, File file) {
-        if (file == null || !file.absolutePath.endsWith(".class")) {
+        if (file == null || !file.absolutePath.endsWith(CLASS_FILE)) {
             return
         }
         println ">>>>>>>>>>>>>现在正在遍历 file: ${file.path}"
 
-        CtClass target = classPool.get(getClassFullName(classPath, file))
-        def interfaces = target.getInterfaces();
-        interfaces.each { CtClass cls ->
-            // 如果 target 实现了 OnClickListener 则会进行处理
-            if (cls.name == ON_CLICK_LISTENER) {
-                println("++++处理${file.path}")
-                handleOnClickListener(target, classPath)
-                return
+        try{
+            CtClass target = classPool.get(getClassFullName(classPath, file))
+            def interfaces = target.getInterfaces();
+            interfaces.each { CtClass cls ->
+                // 如果 target 实现了 OnClickListener 则会进行处理
+                if (cls.name == ON_CLICK_LISTENER) {
+                    println("++++处理${file.path}")
+                    handleOnClickListener(target, classPath)
+                    return
+                }
             }
+        }catch(Exception e){
+            e.printStackTrace()
         }
     }
 
@@ -159,9 +162,11 @@ class JavassistInjector {
                 // jarEntry.name        com/daddyno1/test/LoginActivity.class
                 JarEntry jarEntry = enumeration.nextElement()
 
+                //过滤掉 jar 中非 .class 文件
+                if(!jarEntry.name.endsWith(CLASS_FILE)) continue
+
                 //遍历target的所有实现的interfaces
                 def className = getClassFullNameFromJarEntry(jarEntry)
-
                 CtClass target = classPool.get(className)   //获取目标Class
                 def interfaces = target.getInterfaces()
                 interfaces.each { CtClass cls ->
@@ -183,8 +188,9 @@ class JavassistInjector {
             }
 
         }catch(Exception e){
-
             /**
+             * 因为有的jar中有META-INF，所以转换成CtClass 报错，只要过滤一下条件即可。
+             *
              * What went wrong:
              * Execution failed for task ':app:transformClassesWithClickTraceTransformForDebug'.
              * > javassist.NotFoundException: META-INF.
