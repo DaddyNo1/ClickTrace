@@ -91,8 +91,8 @@ class ClickTraceTransform extends Transform {
             }
         }
         //处理输出jar文件
-        listOfJar.each {
-            javassistInjector.handleJarFile(it)
+        listOfJar.each { File dest ->
+            javassistInjector.handleJarFile(dest)
         }
     }
 
@@ -119,17 +119,6 @@ class ClickTraceTransform extends Transform {
         println "ClickTraceTransform-DirOutput: ${dest.path}"
 
         listOfDir.add(dest)
-
-//        /**
-//         * 第二步：筛选输入内容，按照规则处理自己的输出内容。
-//         */
-//        //过滤掉 文件夹 和 非.class文件
-//        dest.traverse(type: FileType.FILES, nameFilter: ~/.*\.class/) { File classFile ->
-//            // dest.path:  /Users/jxf/workspace/Android/valuableProject/ClickTrace/app/build/intermediates/transforms/ClickTraceTransform/debug/28
-//            // classFile.path:  /Users/jxf/workspace/Android/valuableProject/ClickTrace/app/build/intermediates/transforms/ClickTraceTransform/debug/28/com/daddyno1/clicktrace/MainActivity.class
-//
-//            javassistInjector.handleClassFile(dest.path, classFile)
-//        }
     }
 
     // 处理 jar
@@ -153,8 +142,6 @@ class ClickTraceTransform extends Transform {
         //打印 ClickTraceTransform 这个任务的输入
         println "ClickTraceTransform-JarOutput: ${dest.path}"
 
-        listOfJar.add(dest);
-
-//        javassistInjector.handleJarFile(dest)
+        listOfJar.add(dest)
     }
 }

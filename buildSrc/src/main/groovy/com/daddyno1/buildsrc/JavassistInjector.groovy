@@ -103,15 +103,14 @@ class JavassistInjector {
         if (file == null || !file.absolutePath.endsWith(".class")) {
             return
         }
-
-        handleDependencies(classPath)
+        println ">>>>>>>>>>>>>现在正在遍历 file: ${file.path}"
 
         CtClass target = classPool.get(getClassFullName(classPath, file))
         def interfaces = target.getInterfaces();
         interfaces.each { CtClass cls ->
             // 如果 target 实现了 OnClickListener 则会进行处理
             if (cls.name == ON_CLICK_LISTENER) {
-                println(">>>>>>>>处理${file.path}<<<<<<<<<")
+                println("++++处理${file.path}")
                 handleOnClickListener(target, classPath)
                 return
             }
@@ -148,42 +147,50 @@ class JavassistInjector {
     def handleJarFile(File file) {
         if (file == null || !file.path.endsWith(JAR_FILE)) return
 
-        //遍历jar文件内容
-        Map<String, byte[]> caches = new HashMap<>()
-        JarFile jarFile = new JarFile(file)
-        def enumeration = jarFile.entries()
-        while (enumeration.hasMoreElements()) {
-            // jarEntry.name        com/daddyno1/test/LoginActivity.class
-            JarEntry jarEntry = enumeration.nextElement()
+        println ">>>>>>>>>>>>>现在正在遍历 file: ${file.path}"
 
-            //遍历target的所有实现的interfaces
-            def className = getClassFullNameFromJarEntry(jarEntry)
+        try{
 
-            /**
-             * 过滤androidx 及其相关
-             */
-//            if(className.startsWith(ANDROIDX)){
-//                return
-//            }
+            //遍历jar文件内容
+            Map<String, byte[]> caches = new HashMap<>()
+            JarFile jarFile = new JarFile(file)
+            def enumeration = jarFile.entries()
+            while (enumeration.hasMoreElements()) {
+                // jarEntry.name        com/daddyno1/test/LoginActivity.class
+                JarEntry jarEntry = enumeration.nextElement()
 
-            CtClass target = classPool.get(className)   //获取目标Class
-            def interfaces = target.getInterfaces()
-            interfaces.each { CtClass cls ->
-                // 如果 target 实现了 OnClickListener 则会进行处理
-                if (cls.name == ON_CLICK_LISTENER) {
-                    println(">>>>>>>>处理${jarEntry.name}<<<<<<<<<")
-                    def bytes = handleOnClickListener(target)
-                    caches.put(jarEntry.name, bytes)
-                    //缓存class文件路径和修改过后的byte[]     com/daddyno1/test/LoginActivity.class  ->  byte[]
-                    target.detach() //释放资源
-                    return //阻止each循环
+                //遍历target的所有实现的interfaces
+                def className = getClassFullNameFromJarEntry(jarEntry)
+
+                CtClass target = classPool.get(className)   //获取目标Class
+                def interfaces = target.getInterfaces()
+                interfaces.each { CtClass cls ->
+                    // 如果 target 实现了 OnClickListener 则会进行处理
+                    if (cls.name == ON_CLICK_LISTENER) {
+                        println("++++处理${jarEntry.name}")
+                        def bytes = handleOnClickListener(target)
+                        caches.put(jarEntry.name, bytes)
+                        //缓存class文件路径和修改过后的byte[]     com/daddyno1/test/LoginActivity.class  ->  byte[]
+                        target.detach() //释放资源
+                        return //阻止each循环
+                    }
                 }
             }
-        }
 
-        //遍历完Jar，进行jar替换操作
-        if(!caches.isEmpty()){
-            updateJarFile(file, caches)
+            //遍历完Jar，进行jar替换操作
+            if(!caches.isEmpty()){
+                updateJarFile(file, caches)
+            }
+
+        }catch(Exception e){
+
+            /**
+             * What went wrong:
+             * Execution failed for task ':app:transformClassesWithClickTraceTransformForDebug'.
+             * > javassist.NotFoundException: META-INF.
+             */
+
+            e.printStackTrace();
         }
     }
 
