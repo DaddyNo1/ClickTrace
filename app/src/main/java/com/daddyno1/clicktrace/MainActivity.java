@@ -2,10 +2,13 @@ package com.daddyno1.clicktrace;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import com.daddyno1.test.LoginActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleClick(){
-        Log.e(TAG, "handleClick");
+        Log.e(TAG, ":app-MainActivity#handleClick");
+        startActivity(new Intent(this, LoginActivity.class));
     }
 }
