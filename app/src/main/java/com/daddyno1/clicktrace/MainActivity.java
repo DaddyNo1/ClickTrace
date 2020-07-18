@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.daddyno1.test.LoginActivity;
 
@@ -24,6 +25,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 handleClick();
+            }
+        });
+
+        View defView = findViewById(R.id.defView);
+        defView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "view被点击了", Toast.LENGTH_LONG).show();
             }
         });
     }

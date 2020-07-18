@@ -1,0 +1,16 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    //辅助注册  注解处理器
+    implementation 'com.google.auto.service:auto-service:1.0-rc6'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc6'
+    implementation files('/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/lib/tools.jar')
+
+    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.16.1'
+    implementation 'com.github.javaparser:javaparser-core:3.16.1'
+}
+
+sourceCompatibility = "8"
+targetCompatibility = "8"

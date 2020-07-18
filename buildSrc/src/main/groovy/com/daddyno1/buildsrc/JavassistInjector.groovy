@@ -15,7 +15,6 @@ import java.util.jar.JarOutputStream
 import java.util.zip.ZipEntry
 
 class JavassistInjector {
-    private static final String CLASS_PATH_SYMBOL = "/classes/"
     private static final String CLASS_FILE = ".class"
     private static final String FILE_SEPARATOR = "/"
     private static final String DOT = "."
@@ -24,7 +23,6 @@ class JavassistInjector {
     public static final String METHOD_SIGNATURE = "(Landroid/view/View;)V"
     public static final String TAG = "==ClickTrace=="
     public static final String JAR_FILE = ".jar"
-    public static final String OPT_FILE = ".opt"
 
 
     Project project
@@ -184,7 +182,7 @@ class JavassistInjector {
 
             //遍历完Jar，进行jar替换操作
             if(!caches.isEmpty()){
-                updateJarFile(file, caches)
+                InjectUtils.updateJarFile(file, caches)
             }
 
         }catch(Exception e){
@@ -200,50 +198,4 @@ class JavassistInjector {
         }
     }
 
-    /**
-     * 涉及 Jar 文件的修改。需要临时文件过渡。
-     */
-    def updateJarFile(File file, Map<String, byte[]> cache) {
-        try {
-            /**
-             * 第一步：创建过渡文件
-             */
-            File optJar = new File(file.parent, file.name + OPT_FILE)
-            def jarOutputStream = new JarOutputStream(new FileOutputStream(optJar))
-
-            /**
-             * 遍历file，填充新的File
-             */
-            JarFile jarFile = new JarFile(file)
-            def enumeration = jarFile.entries()
-            while (enumeration.hasMoreElements()) {
-                JarEntry jarEntry = enumeration.nextElement()
-                ZipEntry zipEntry = new ZipEntry(jarEntry.name)
-                def inputStream = jarFile.getInputStream(zipEntry)
-                jarOutputStream.putNextEntry(zipEntry)
-
-                if (cache.containsKey(jarEntry.name)) {
-                    //被处理过
-                    jarOutputStream.write(cache.get(jarEntry.name))
-                } else {
-                    //没被处理
-                    jarOutputStream.write(IOUtils.toByteArray(inputStream))
-                }
-                jarOutputStream.closeEntry()
-                inputStream.close()
-            }
-            jarOutputStream.close()
-            jarFile.close()
-
-            //删除源文件
-            if (file.exists()) {
-                file.delete()
-            }
-            //重命名
-            optJar.renameTo(file)
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }
